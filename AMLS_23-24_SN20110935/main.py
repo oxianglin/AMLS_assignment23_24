@@ -6,35 +6,37 @@ sys.path.insert(0, f'{os.getcwd()}/A')
 import pneumoniamnist as pnm
 
 sys.path.insert(0, f'{os.getcwd()}/B')
-import pathmnist as path
+from pathmnist import Pathmnist
 
 class Amls():
     def __init__(self, args:argparse.Namespace=()):
         super().__init__()
         self.mnist = args.mnist
         self.nettype = args.nettype
+        if (self.nettype > 1): #To change based on the number of nettype supported
+            self.nettype = 1
+        self.lib = args.lib
+        self.debug = args.debug
 
     @classmethod
-    def argparser(cls): #angparser, my own AMLS member function/method 
-        #argparse is site package with class ArgumentParser
-        #ArgumentParser class has a member function called parse_args (returns value that we write into args)
+    def argparser(cls):
         parser = argparse.ArgumentParser(description='Advnced machine learning system', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         parser.add_argument('-m', '--mnist', nargs='?', default='pathmnist', help='pathmnist or pneumoniamnist')
         parser.add_argument('-n', '--nettype', nargs='?', type=int, default=1, help='Self-defined neural network type')
+        parser.add_argument('-l', '--lib', action='store_true', help='Use medmnist library')
+        parser.add_argument('-dbg', '--debug', action='store_true', help='Print debug messages')
         return parser
     
     def run_pathmnist(self):
-        mnist = path.Pathmnist()
-        net = path.Net(in_channels=mnist.n_channels, num_classes=mnist.n_classes, type=self.nettype)
-        net.hello()
+        mnist = Pathmnist(self.debug)
+        mnist.data_loading(self.lib)
+        mnist.define_model(self.nettype, mnist.n_channels, mnist.n_classes)
+        mnist.train_model(self.nettype)
 
     def run_pneumoniamnist(self):
         mnist = pnm.Pneumoniamnist()
         net = pnm.Net(in_channels=mnist.n_channels, num_classes=mnist.n_classes, type=self.nettype)
         net.hello()
-
-def print_help():
-    Amls.argparser().print_help()
 
 def main():
     amls = Amls(Amls.argparser().parse_args())
@@ -43,7 +45,7 @@ def main():
     elif (amls.mnist=='pneumoniamnist'):
         amls.run_pneumoniamnist()
     else:
-        print_help()
+        Amls.argparser().print_help()
         
 
 if __name__ == '__main__':
