@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import os
 import numpy as np
 import medmnist
+from sklearn.metrics import accuracy_score
 from medmnist import INFO, Evaluator
 
 DEBUG = False
@@ -20,6 +21,7 @@ class Net(nn.Module):
     def __init__(self, in_channels, num_classes, nettype):
         super(Net, self).__init__()
         if (nettype==1):
+            print('Define CNN model')
             self.layer1 = nn.Sequential(
                 nn.Conv2d(in_channels, 16, kernel_size=3),
                 nn.BatchNorm2d(16),
@@ -92,6 +94,16 @@ class data_set(data.Dataset):
                     dbg_print(f'npz_file[{item}][0][0] = {npz_file[item][0][0]}')
                     dbg_print(f'npz_file[{item}][0][0][0].shape = {npz_file[item][0][0][0].shape}')
                     dbg_print(f'npz_file[{item}][0][0][0] = {npz_file[item][0][0][0]}')
+        if (DEBUG and split == 'val'):
+            lst = npz_file.files
+            for item in lst:    
+                if (item == 'val_images'):
+                    dbg_print(f'npz_file[{item}].shape = {npz_file[item].shape}')
+        if (DEBUG and split == 'test'):
+            lst = npz_file.files
+            for item in lst:    
+                if (item == 'test_images'):
+                    dbg_print(f'npz_file[{item}].shape = {npz_file[item].shape}')
         self.split = split
         self.transform = transform
         self.target_transform = target_transform
@@ -162,6 +174,7 @@ class Pathmnist():
             print('The data to be encapsulated into DataLoader form')
             self.train_loader = data.DataLoader(dataset=self.train_dataset, batch_size=batch_size, shuffle=True)
             self.train_loader_at_eval = data.DataLoader(dataset=self.train_dataset, batch_size=2*batch_size, shuffle=False)
+            self.val_loader = data.DataLoader(dataset=self.val_dataset, batch_size=batch_size, shuffle=False)
             self.test_loader = data.DataLoader(dataset=self.test_dataset, batch_size=2*batch_size, shuffle=False)
         else:
             print('Use code extracted minimally from medmnist library for datatset processing')
@@ -172,35 +185,60 @@ class Pathmnist():
             print('The data to be encapsulated into DataLoader form')
             self.train_loader = data.DataLoader(dataset=self.train_dataset, batch_size=batch_size, shuffle=True)
             self.train_loader_at_eval = data.DataLoader(dataset=self.train_dataset, batch_size=2*batch_size, shuffle=False)
+            self.val_loader = data.DataLoader(dataset=self.val_dataset, batch_size=batch_size, shuffle=False)
             self.test_loader = data.DataLoader(dataset=self.test_dataset, batch_size=2*batch_size, shuffle=False)
-        
     
     def define_model(self, nettype, n_channels, n_classes, learningrate=0.001):
-        if (nettype == 1):
-            print('Define CNN model')
         self.model = Net(in_channels=n_channels, num_classes=n_classes, nettype=nettype)   
         print('Define loss function and optimizer')
-        if self.task == "multi-label, binary-class":
-            self.criterion = nn.BCEWithLogitsLoss()
-        else:
-            self.criterion = nn.CrossEntropyLoss()            
+        #multi-class
+        self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.SGD(self.model.parameters(), lr=learningrate, momentum=0.9)
 
     def train_model(self, nettype, epoch=3):
-        if (nettype == 1):
-            print('Train CNN model')
+        self.val_acc = []
+        self.saved_model = []
         for epoch in range(epoch):
+            print(f'Train the model with train set at epoch {epoch}')
             self.model.train()
             for inputs, targets in tqdm(self.train_loader):
                 # forward + backward + optimize
                 self.optimizer.zero_grad()
-                outputs = self.model(inputs, nettype)
-                
-                if self.task == 'multi-label, binary-class':
-                    targets = targets.to(torch.float32)
-                    loss = self.criterion(outputs, targets)
-                else:
-                    targets = targets.squeeze().long()
-                    loss = self.criterion(outputs, targets)
+                outputs = self.model(inputs, nettype)                
+                #multi-class
+                targets = targets.squeeze().long()
+                loss = self.criterion(outputs, targets)
+
                 loss.backward()
                 self.optimizer.step()
+            self.val_acc.append(self.test_model(nettype, 'val'))
+            self.saved_model.append(f'{os.getcwd()}{os.sep}saved_model_{epoch}')
+            torch.save(self.model, f'{os.getcwd()}{os.sep}saved_model_{epoch}')
+            print(f'Model saved in {os.getcwd()}{os.sep}saved_model_{epoch}')
+
+    def test_model(self, nettype, split):
+        if (split == 'test'):
+            idx = self.val_acc.index(max(self.val_acc))
+            self.model = torch.load(f'{os.getcwd()}{os.sep}saved_model_{idx}')
+            print(f'Model loaded from {os.getcwd()}{os.sep}saved_model_{idx}')
+            print('Test the model with test set')
+        elif (split == 'val'):
+            print('Evaluate the model with val set')
+        self.model.eval()
+        y_true = torch.tensor([])
+        y_score = torch.tensor([])
+        data_loader = self.val_loader if split == 'val' else self.test_loader
+        with torch.no_grad():
+            for inputs, targets in tqdm(data_loader):
+                outputs = self.model(inputs, nettype)
+                targets = targets.squeeze().long()
+                outputs = outputs.softmax(dim=-1)
+                targets = targets.float().resize_(len(targets), 1)
+                y_true = torch.cat((y_true, targets), 0)
+                y_score = torch.cat((y_score, outputs), 0)
+            y_true = y_true.numpy().squeeze()
+            y_score = y_score.detach().numpy().squeeze()
+            #multi-class
+            accuracy = accuracy_score(y_true, np.argmax(y_score, axis=-1))
+            print('%s acc:%.3f' % (split, accuracy))
+            return accuracy
