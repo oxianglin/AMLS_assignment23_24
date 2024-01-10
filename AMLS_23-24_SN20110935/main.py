@@ -32,6 +32,7 @@ class Amls():
         mnist.data_loading(self.lib)
         mnist.define_model(self.nettype, mnist.n_channels, mnist.n_classes)
         mnist.train_model(self.nettype)
+        mnist.test_model(self.nettype,'test')
 
     def run_pneumoniamnist(self):
         mnist = pnm.Pneumoniamnist()
@@ -46,7 +47,6 @@ def main():
         amls.run_pneumoniamnist()
     else:
         Amls.argparser().print_help()
-        
 
 if __name__ == '__main__':
     main()
