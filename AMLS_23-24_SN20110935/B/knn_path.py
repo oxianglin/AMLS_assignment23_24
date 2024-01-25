@@ -57,9 +57,6 @@ def knn_path():
     knn = KNeighborsClassifier(n_neighbors=best_k)
     knn.fit(X_train, y_train)
     best_test_acc = knn.score(X_test, y_test)
-    # for i in range(0, len(y_test)):
-    #     if test_predict[k][i] != y_test[i]:
-    #         print(f'Predicted label for test data no. {i+1} is {test_predict[k][i]} but actual label is {y_test[i]}')
     print('Hyperparameter tuning using for loop: the best test acc:%.3f.' % (best_test_acc))
 
     print('KNN hyperparameter tuning using k-fold cross validation.')
