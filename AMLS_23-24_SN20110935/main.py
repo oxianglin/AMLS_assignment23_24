@@ -35,7 +35,7 @@ class Amls():
 #                        {'id':1 if not self.id else self.id, 'nettype':1, 'seed':106, 'batch_size':64, 'epoch':15, 'lr':0.05, 'momentum':0.9}
 #                        ]
         else:
-            self.hyperparameter = [{'id':11 if not self.id else self.id, 'nettype':1, 'seed':34, 'batch_size':128, 'epoch':6, 'lr':0.003, 'momentum':0.9}, #0.869
+            self.hyperparameter = [{'id':11 if not self.id else self.id, 'nettype':1, 'seed':34, 'batch_size':128, 'epoch':6, 'lr':0.003, 'momentum':0.9}, 
                         {'id':12 if not self.id else self.id+1, 'nettype':1, 'seed':random.randrange(1,sys.maxsize), 'batch_size':random.choice([64,96,128,192,256]), 'epoch':random.choice([5,6,7,8,9]), 'lr':random.choice([0.001,0.002,0.003,0.005,0.008,0.01,0.05,0.1]), 'momentum':random.choice([0.5,0.6,0.7,0.8,0.9])},
                         {'id':13 if not self.id else self.id+2, 'nettype':1, 'seed':random.randrange(1,sys.maxsize), 'batch_size':random.choice([64,96,128,192,256]), 'epoch':random.choice([5,6,7,8,9]), 'lr':random.choice([0.001,0.002,0.003,0.005,0.008,0.01,0.05,0.1]), 'momentum':random.choice([0.5,0.6,0.7,0.8,0.9])}]
 #            self.hyperparameter = [
