@@ -160,7 +160,7 @@ class Pathmnist(): #Adopt from medmnist sample code
             val_acc.append(acc)
             val_loss.append(loss)
             print('val acc:%.3f, val loss:%.3f' % (val_acc[epoch], val_loss[epoch]))
-            if epoch>0 and (val_acc[epoch]-val_acc[epoch-1]<0.001) and (val_acc[epoch]<0.7 or val_acc[epoch]>0.9):
+            if epoch>0 and (val_acc[epoch]-val_acc[epoch-1]<0.001) and (val_acc[epoch]<0.7 or val_acc[epoch]>0.93):
                 print('Stopping criteria met')
                 break
             if val_acc[epoch] > 0.86:
