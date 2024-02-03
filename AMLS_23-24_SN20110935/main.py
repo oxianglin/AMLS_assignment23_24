@@ -23,7 +23,7 @@ class Amls():
         #Some contents are not hyperparameters (e.g. nettype).
         #id for identification, to be used when saving model after each training, and loading a model before testing.
         if (self.mnist=='pneumoniamnist'):
-            self.hyperparameter = [{'id':1 if not self.id else self.id, 'nettype':1, 'seed':106, 'batch_size':64, 'epoch':8, 'lr':0.05, 'momentum':0.8}, 
+            self.hyperparameter = [{'id':1 if not self.id else self.id, 'nettype':1, 'seed':106, 'batch_size':64, 'epoch':8, 'lr':0.05, 'momentum':0.9}, 
                                     {'id':2 if not self.id else self.id+1, 'nettype':1, 'seed':random.randrange(1,sys.maxsize), 'batch_size':random.choice([32,64,96,128]), 'epoch':random.choice([5,6,7,8,9,10]), 'lr':random.choice([0.001,0.002,0.003,0.005,0.008,0.01,0.05,0.1]), 'momentum':random.choice([0.5,0.6,0.7,0.8,0.9])},
                                     {'id':3 if not self.id else self.id+2, 'nettype':1, 'seed':random.randrange(1,sys.maxsize), 'batch_size':random.choice([32,64,96,128]), 'epoch':random.choice([5,6,7,8,9,10]), 'lr':random.choice([0.001,0.002,0.003,0.005,0.008,0.01,0.05,0.1]), 'momentum':random.choice([0.5,0.6,0.7,0.8,0.9])}]                        
 #                                   {'id':1 if not self.id else self.id, 'nettype':1, 'seed':106, 'batch_size':64, 'epoch':8, 'lr':0.05, 'momentum':0.92},
